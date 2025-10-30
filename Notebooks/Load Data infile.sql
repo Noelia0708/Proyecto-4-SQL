@@ -1,126 +1,131 @@
 USE proyecto_4_sql;
 
+-- PASO 1: LIMPIEZA FORZADA Y CORRECCIONES DE ESTRUCTURA
 
+-- 1. DESACTIVAR COMPROBACIONES DE FK (Para forzar la limpieza)
+SET FOREIGN_KEY_CHECKS = 0;
 
--- ##################################################################
--- PASO 2: CARGA DE TABLAS DE REFERENCIA (Base)
--- Debe ir primero para que existan las Claves Primarias (PK)
--- ##################################################################
+-- 2. AJUSTAR TAMAÑO DE COLUMNAS (Para prevenir Error 1406, usando TEXT)
+ALTER TABLE actors MODIFY COLUMN cast_name TEXT NOT NULL;
+ALTER TABLE directors MODIFY COLUMN director_name TEXT NOT NULL;
 
--- Carga de Actores
-LOAD DATA INFILE "C:/temp_csv/actores.csv"
+-- 3. VACIAR TODAS LAS TABLAS EN ORDEN SEGURO
+TRUNCATE TABLE title_cast;
+TRUNCATE TABLE title_director;
+TRUNCATE TABLE title_genre;
+TRUNCATE TABLE title_country;
+TRUNCATE TABLE titles;
+TRUNCATE TABLE actors;
+TRUNCATE TABLE directors;
+TRUNCATE TABLE genres;
+TRUNCATE TABLE countries;
+TRUNCATE TABLE release_years;
+TRUNCATE TABLE types;
+TRUNCATE TABLE platforms;
+
+-- 4. REACTIVAR COMPROBACIONES DE FK
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- PASO 2: CARGA DE DATOS (Con Rutas Literales)
+
+-- Ruta segura para cada tabla.
+SET @UPLOAD_PATH = 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/'; 
+
+-- BLOQUE A: CARGA DE TABLAS DE REFERENCIA 
+
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/actores.csv' 
 INTO TABLE actors
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
--- Carga de Directores
-LOAD DATA INFILE "C:/temp_csv/directores.csv" -- ⚠️ Revisa el nombre exacto de tu archivo
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/directores.csv' 
 INTO TABLE directors
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
--- Carga de Géneros
-LOAD DATA INFILE "C:/temp_csv/genero.csv" -- ⚠️ Revisa el nombre exacto de tu archivo
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/genero.csv' 
 INTO TABLE genres
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
--- Carga de Países
-LOAD DATA INFILE "C:/temp_csv/pais.csv" -- ⚠️ Revisa el nombre exacto de tu archivo
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/pais.csv' 
 INTO TABLE countries
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
--- Carga de Años de Lanzamiento
-LOAD DATA INFILE "C:/temp_csv/año.csv"
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/year_unicos.csv" 
 INTO TABLE release_years
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
--- Carga de Tipos (Movie/TV Show)
-LOAD DATA INFILE "C:/temp_csv/tipos.csv"
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/tipos.csv' 
 INTO TABLE types
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
--- Carga de Plataformas
-LOAD DATA INFILE "C:/temp_csv/plataforma.csv"
+LOAD DATA INFILE "C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/plataforma.csv"
 INTO TABLE platforms
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
 
--- ##################################################################
--- PASO 3: CARGA DE LA TABLA PRINCIPAL (TITLES)
--- Debe ir después de las tablas 1:M (Años, Tipos, Plataformas)
--- ##################################################################
+-- BLOQUE B: CARGA DE LA TABLA PRINCIPAL
 
-LOAD DATA INFILE "C:/temp_csv/tabla_titles.csv"
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/tabla_titles.csv' 
 INTO TABLE titles
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
 
--- ##################################################################
--- PASO 4: CARGA DE TABLAS PUENTE (Relaciones M:N)
--- Debe ir al final, ya que dependen de la PK de 'titles' y las FK.
--- ##################################################################
+-- BLOQUE C: CARGA DE TABLAS PUENTE 
 
--- Carga de Títulos y Actores
-LOAD DATA INFILE "C:/temp_csv/show_actor.csv"
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/show_actor.csv' 
 INTO TABLE title_cast
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
--- Carga de Títulos y Directores
-LOAD DATA INFILE "C:/temp_csv/show_director.csv"
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/show_director.csv' 
 INTO TABLE title_director
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
--- Carga de Títulos y Géneros
-LOAD DATA INFILE "C:/temp_csv/show_genre.csv"
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/show_genre.csv' 
 INTO TABLE title_genre
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
 
--- Carga de Títulos y Países
-LOAD DATA INFILE "C:/temp_csv/show_country.csv"
+LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/show_country.csv' 
 INTO TABLE title_country
 CHARACTER SET utf8mb4
-FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-;
+IGNORE 1 ROWS;
+
+-- Revisión rápida de datos cargados
+SELECT 
+    (SELECT COUNT(*) FROM actors) AS Total_Actores,
+    (SELECT COUNT(*) FROM directors) AS Total_Directores,
+    (SELECT COUNT(*) FROM titles) AS Total_Titulos,
+    (SELECT COUNT(*) FROM title_cast) AS Total_Relaciones_Cast;
